@@ -11,6 +11,13 @@ import applyAuthMiddleware from "./middleware/auth.js";
 import verifyRequest from "./middleware/verify-request.js";
 import { setupGDPRWebHooks } from "./gdpr.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
+// Qr codes 
+import applyQrCodeApiEndpoints from "./middleware/qr-code-api.js";
+import { QRCodesDB } from "./qr-codes-db.js";
+
+// Public endpoints
+import applyQrCodePublicEndpoints from "./middleware/qr-code-public.js";
+
 
 const USE_ONLINE_TOKENS = true;
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth";
@@ -28,7 +35,11 @@ if (fs.existsSync(versionFilePath)) {
 const DEV_INDEX_PATH = `${process.cwd()}/frontend/`;
 const PROD_INDEX_PATH = `${process.cwd()}/frontend/dist/`;
 
-const DB_PATH = `${process.cwd()}/database.sqlite`;
+const dbFile = join(process.cwd(), "database.sqlite");
+const sessionDb = new Shopify.Session.SQLiteSessionStorage(dbFile);
+// Initialize SQLite DB
+QRCodesDB.db = sessionDb.db;
+QRCodesDB.init();
 
 Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
@@ -38,10 +49,9 @@ Shopify.Context.initialize({
   HOST_SCHEME: process.env.HOST.split("://")[0],
   API_VERSION: ApiVersion.April22,
   IS_EMBEDDED_APP: true,
-  // This should be replaced with your preferred storage strategy
-  SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
-  USER_AGENT_PREFIX: `Node App Template/${templateVersion}`,
+  SESSION_STORAGE: sessionDb,
 });
+
 
 // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
 // persist this object in your app.
@@ -88,6 +98,8 @@ export async function createServer(
     billing: billingSettings,
   });
 
+  applyQrCodePublicEndpoints(app);
+
   app.post("/api/webhooks", async (req, res) => {
     try {
       await Shopify.Webhooks.Registry.process(req, res);
@@ -128,6 +140,9 @@ export async function createServer(
   });
 
   app.use(express.json());
+
+  applyQrCodeApiEndpoints(app);
+
 
   app.use((req, res, next) => {
     const shop = req.query.shop;
