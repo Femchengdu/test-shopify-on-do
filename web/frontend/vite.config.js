@@ -68,6 +68,9 @@ export default defineConfig({
       "^/qrcodes/[0-9]+/image(\\?.*)?$": proxyOptions,
       "^/qrcodes/[0-9]+/scan(\\?.*)?$": proxyOptions,
       "^/nft_service(/|(\\?.*)?$)": proxyOptions,
+      "/create_customer": proxyOptions,
+      "/create_draft_order": proxyOptions,
+      "/get_all_draft_orders": proxyOptions,
     },
   },
   test: {
