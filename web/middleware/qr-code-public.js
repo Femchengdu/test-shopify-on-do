@@ -6,6 +6,7 @@ import QRCode from "qrcode";
 
 import { QRCodesDB } from "../qr-codes-db.js";
 import { getQrCodeOr404 } from "../helpers/qr-codes.js";
+import { createDraftOrder, createContact, getAllDraftOrders } from "../helpers/customer-orders.js";
 
 import axios from "axios";
 
@@ -60,4 +61,36 @@ export default function applyQrCodePublicEndpoints(app) {
             res.status(500).send(error.message);
         }
     });
+    // Create an endpoint to create a user
+    app.get("/create_customer", async (req, res) => {
+        try {
+            const results = await createContact()
+            console.log("My results are????", results)
+            res.status(200).send(results);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Create an endpoint to create a draft order
+    app.get("/create_draft_order", async (req, res) => {
+        try {
+            const results = await createDraftOrder()
+            console.log("My results are????", results)
+            res.status(200).send(results);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    });
+    // Create an endpoint to get all draft orders
+    app.get("/get_all_draft_orders", async (req, res) => {
+        try {
+            const results = await getAllDraftOrders()
+            console.log("My results are????", results)
+            res.status(200).send(results);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    });
+
 }
