@@ -31,3 +31,9 @@ web/database.sqlite
 # Without this, they may get a warning if using a different package manager to us
 yarn.lock
 package-lock.json
+
+# Don't commit customer information
+sample-customer.json
+
+# Ignore the sample draft order
+sample-draft-order.json
